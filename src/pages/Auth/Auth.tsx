@@ -56,6 +56,7 @@ const AuthPage: React.FC = () => {
                 const data = await response.json();
 
                 if (data.status) {
+                    localStorage.setItem('authToken', data.data.token);
                     if (mode === 'login') {
                         window.location.href = '/home';
                     } else {
