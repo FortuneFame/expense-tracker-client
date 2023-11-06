@@ -74,3 +74,10 @@ export type ValidationErrors = {
 export type PropsAccountsList = {
     authToken: string | null;
 }
+
+
+export type ExpenseType = {
+    id: number;
+    description: string;
+    amount: number;
+};

@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from 'react';
 import { URL_API } from '../../constants/constantsApp';
 import { useAccounts } from '../../hooks/useAccounts';
 import { AccountType, PropsAccountsList } from '../../types';
+import Expense from '../Expense/Expense';
 
 const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }> => {
     const response = await fetch(`${URL_API}/account`, {
@@ -20,7 +21,7 @@ const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }>
 }
 
 const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
- const { accounts, setAccounts, refreshTrigger, setRefreshTrigger } = useAccounts();
+    const { accounts, setAccounts, refreshTrigger, setRefreshTrigger } = useAccounts();
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -36,18 +37,18 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                     setLoading(false);
                 })
                 .catch((err: unknown) => {
-    if (err instanceof Error) {
-        setError(err.message);
-    } else {
-        setError("Неизвестная ошибка");
-    }
-    setLoading(false);
-});
-            }
-        }, [authToken, refreshTrigger, setAccounts, setRefreshTrigger]);
+                    if (err instanceof Error) {
+                        setError(err.message);
+                    } else {
+                        setError("Неизвестная ошибка");
+                    }
+                    setLoading(false);
+                });
+        }
+    }, [authToken, refreshTrigger, setAccounts, setRefreshTrigger]);
 
     if (loading) return <p>Загрузка...</p>;
-   if (error) return <p>Ошибка: {error as string}</p>;
+    if (error) return <p>Ошибка: {error as string}</p>;
         
     const handleEditAccountName = async (id: number, name: string) => {
         try {
@@ -57,7 +58,7 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
                 },
-                body: JSON.stringify({ name }) 
+                body: JSON.stringify({ name })
             });
         
             if (!response.ok) {
@@ -67,42 +68,45 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
             setRefreshTrigger(!refreshTrigger);
         
         } catch (error: unknown) {
-    if (error instanceof Error) {
-        setError(error.message);
-    } else {
-        setError("Неизвестная ошибка");
-    }
-}
-    };
-
-    const handleDeleteAccount = async (id: number) => {
-        try {
-            const response = await fetch(`${URL_API}/account/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${authToken}`
-                }
-            });
-        
-            if (!response.ok) {
-                throw new Error('Ошибка при удалении счета');
+            if (error instanceof Error) {
+                setError(error.message);
+            } else {
+                setError("Неизвестная ошибка");
             }
-
-            setRefreshTrigger(!refreshTrigger);
-        
-       } catch (error: unknown) {
-    if (error instanceof Error) {
-        setError(error.message);
-    } else {
-        setError("Неизвестная ошибка");
-    }
-}
+        }
     };
+
+   const handleDeleteAccount = async (id: number) => {
+    try {
+        const response = await fetch(`${URL_API}/account/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+    
+        if (!response.ok) {
+            const errorData = await response.json(); // Добавлена обработка JSON ответа для получения сообщения об ошибке
+            throw new Error(errorData.message || 'Ошибка при удалении счета');
+        }
+
+        setRefreshTrigger(!refreshTrigger); // Триггер для обновления списка счетов
+        
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            setError(error.message);
+        } else {
+            setError("Неизвестная ошибка");
+        }
+    }
+};
+
 
     
     return (
         <div>
-            <h2>Accounts List</h2>
+            {accounts.length > 0 && <h2>Существующие бюджеты</h2>}
             {Array.isArray(accounts) && accounts.map(account => {
                 const isEditing = editingStates[account.id] || false;
 
@@ -132,6 +136,8 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                     </div>
                 );
             })}
+           {authToken && accounts.length > 0 && <Expense authToken={authToken} onExpenseAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />}
+
         </div>
     );
 };

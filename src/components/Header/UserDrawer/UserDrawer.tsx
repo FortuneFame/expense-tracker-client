@@ -7,7 +7,7 @@ import { Props, UserData, ValidationErrors } from '../../../types';
 import { URL_API } from '../../../constants/constantsApp';
 import { validateUserData } from './validationForm';
 
-import Loader from '../../Loader';
+import Loader from '../../Loader';  
 import TotalBalance from '../../TotalBalance/TotalBalance';
 
 import { Drawer, Box, Button, Typography, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
