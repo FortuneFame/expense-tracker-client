@@ -1,10 +1,14 @@
 import { FC, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
+import { useAccounts } from '../../../hooks/useAccounts';
 import { useUserActions } from '../../../hooks/useUserActions';
 import { Props, UserData, ValidationErrors } from '../../../types';
 import { URL_API } from '../../../constants/constantsApp';
 import { validateUserData } from './validationForm';
+
+import Loader from '../../Loader';
+import TotalBalance from '../../TotalBalance/TotalBalance';
 
 import { Drawer, Box, Button, Typography, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
@@ -18,7 +22,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import DoneIcon from '@mui/icons-material/Done';
 import SettingsIcon from '@mui/icons-material/Settings';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
-import Loader from '../../Loader';
 
 const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
     const [loading, setLoading] = useState(false);
@@ -32,6 +35,8 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
     const [isChangingPassword, setIsChangingPassword] = useState(false);
 
     const [errors, setErrors] = useState<ValidationErrors>({});
+
+    const { accounts, setAccounts } = useAccounts();
 
     const {
         handleLogout,
@@ -284,8 +289,15 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
                             </Button>
                         </Box>
                     </Box>
-                ) : userData && (
-                    <Box sx={{ boxShadow: '0px 4px 30px -10px rgba(0, 0, 0, 1)', borderRadius: '4px' }} margin={1} marginTop='90px' padding={2} display="flex" flexDirection="column" justifyContent="space-between" alignItems="center">
+                    ) : userData && (
+                          
+                        <Box>
+                                <Box sx={{ boxShadow: '0px 4px 30px -10px rgba(0, 0, 0, 1)', borderRadius: '4px' }} margin={1} marginTop='90px' padding={2} display="flex" flexDirection="column" justifyContent="space-between" alignItems="center">
+                                    <TotalBalance setAccounts={setAccounts} accounts={accounts} />
+                           </Box>
+                                    
+                        <Box sx={{ boxShadow: '0px 4px 30px -10px rgba(0, 0, 0, 1)', borderRadius: '4px' }} margin={1} marginTop='90px' padding={2} display="flex" flexDirection="column" justifyContent="space-between" alignItems="center">
+                        
                         <Typography
                             width='100%'
                             display="flex"
@@ -321,6 +333,7 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
                             </Box>
                         </Box>
                     </Box>
+                       </Box>
                 )}
             </Drawer>
         </div>

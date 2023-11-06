@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 
 import { useFetcher } from 'react-router-dom';
 import { URL_API } from '../../constants/constantsApp';

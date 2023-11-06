@@ -3,7 +3,7 @@ import { URL_API } from '../../constants/constantsApp';
 import { useAccounts } from '../../hooks/useAccounts';
 import { AccountType, PropsAccountsList } from '../../types';
 
- const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }> => {
+const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }> => {
     const response = await fetch(`${URL_API}/account`, {
         method: 'GET',
         headers: {

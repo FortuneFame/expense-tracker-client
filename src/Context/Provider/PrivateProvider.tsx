@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthProvider';
 import { PrivateRouteProps } from '../../types';
 
-
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     const authToken = useContext(AuthContext);
     const navigate = useNavigate();

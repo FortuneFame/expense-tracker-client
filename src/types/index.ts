@@ -3,9 +3,15 @@ import { ReactNode } from "react";
 export interface AccountsContextType {
   accounts: AccountType[];
   setAccounts: (accounts: AccountType[]) => void;
-  refreshTrigger: boolean;
-  setRefreshTrigger: (trigger: boolean) => void;
+ refreshTrigger: boolean;
+    setRefreshTrigger: React.Dispatch<React.SetStateAction<boolean>>;
 }
+
+export interface TotalBalanceProps {
+     accounts: AccountType[];
+     setAccounts: (accounts: AccountType[]) => void;
+}
+
 
 export interface FormValues {
     name?: string;
@@ -53,9 +59,9 @@ export type UseUserActionsProps = {
 }
 
 export type AccountType = {
-id: number;
-  name: string;
-  balance: number;
+    id: number;
+    name: string;
+    balance: number;
 }
 
 export type ValidationErrors = {

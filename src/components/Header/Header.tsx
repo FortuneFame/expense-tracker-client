@@ -1,9 +1,11 @@
 import { FC, lazy, useState } from "react";
+
+import useAuth from "../../Context/authContext";
+
 import { AppBar, Toolbar, Typography } from "@mui/material";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
-import useAuth from "../../Context/authContext";
 
 export const UserDrawer = lazy(() => import('./UserDrawer'));
 
