@@ -1,14 +1,16 @@
-import { FC, useState } from "react";
+import { FC, lazy, useState } from "react";
 import { AppBar, Toolbar, Typography } from "@mui/material";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
-import UserDrawer from '../UserDrawer/UserDrawer';
+import useAuth from "../../Context/authContext";
+
+export const UserDrawer = lazy(() => import('./UserDrawer'));
 
 const Header: FC = () => {
+    const authToken = useAuth();
     
     const [open, setOpen] = useState(false);
-    const authToken = localStorage.getItem('authToken');
 
     return (
         <AppBar position="static">

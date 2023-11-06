@@ -1,14 +1,17 @@
 import { FC } from 'react';
-import { Provider } from 'react-redux';
+// import { Provider } from 'react-redux';
 import { Outlet } from 'react-router-dom';
-import store from './store/index';
+import AuthProvider from './Context/Provider/AuthProvider';
+// import store from './store/index';
 
 const App: FC = () => {
     return (
-        <Provider store={store}>
+        <AuthProvider>
+        {/* // <Provider store={store}> */}
             <Outlet />
-        </Provider>
-    );
+        {/* // </Provider> */}
+    </AuthProvider>
+            );
 }
 
 export default App;

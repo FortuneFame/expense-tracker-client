@@ -1,30 +1,8 @@
 import { useCallback, useState } from 'react';
 import axios from 'axios';
-
-export type Props = {
-  open: boolean;
-  onClose: () => void;
-  authToken: string | null;
-};
-
-export type UserData = {
-    id: number;
-  name: string;
-    email: string;
-   password?: string;
-    confirmPassword?: string;
-};
-
-type UseUserActionsProps = {
-    authToken: string | null;
-    userData: UserData | null;
-    setUserData: (data: UserData | null) => void;
-    setIsEditing: (value: boolean) => void;
-    setTempUserData: (data: UserData | null) => void;
-    setShowPassword: (value: boolean) => void; 
-    setDialogOpen: (value: boolean) => void;   
-    setDialogAction: (value: 'logout' | 'delete' | 'save' | null) => void; 
-};
+import { URL_API } from '../constants/constantsApp';
+import { useNavigate } from 'react-router-dom';
+import { UseUserActionsProps, UserData } from '../types';
 
 export const useUserActions = ({
     authToken,
@@ -34,11 +12,13 @@ export const useUserActions = ({
     setTempUserData,
     setDialogAction,
     setShowPassword,
-    setDialogOpen
+    setDialogOpen,
+    setIsChangingPassword
 }: UseUserActionsProps) => {
     const [tempPassword, setTempPassword] = useState<string | null>(null);
     const [tempConfirmPassword, setTempConfirmPassword] = useState<string | null>(null);
     
+    const navigate = useNavigate();
 
     const handleLogout = useCallback(async () => {
         if (!authToken) {
@@ -47,7 +27,7 @@ export const useUserActions = ({
         }
 
         try {
-            const response = await axios.post('http://localhost:8000/api/logout', {}, {
+            const response = await axios.post(`${URL_API}/logout`, {}, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`
                 }
@@ -55,14 +35,14 @@ export const useUserActions = ({
 
             if (response.status === 200) {
                 localStorage.removeItem('authToken');
-                window.location.href = '/';
+                navigate('/');
             } else {
                 console.error('Logout failed:', response.data.error);
             }
         } catch (error) {
             console.error('Error during logout:', error);
         }
-    }, [authToken]);
+    }, [authToken, navigate]);
 
     const handleDeleteAccount = useCallback(async () => {
         if (!authToken || !userData) {
@@ -71,7 +51,7 @@ export const useUserActions = ({
         }
 
         try {
-            const response = await axios.delete(`http://localhost:8000/api/users/${userData.id}`, {
+            const response = await axios.delete(`${URL_API}/users/${userData.id}`, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`
                 }
@@ -79,14 +59,14 @@ export const useUserActions = ({
 
             if (response.status === 200) {
                 localStorage.removeItem('authToken');
-                window.location.href = '/';
+                navigate('/');
             } else {
                 console.error('Account deletion failed:', response.data.error);
             }
         } catch (error) {
             console.error('Error during account deletion:', error);
         }
-    }, [authToken, userData]);
+    }, [authToken, userData, navigate]);
 
     const handleSave = async (updatedData: UserData) => {
         if (!authToken) return;
@@ -103,7 +83,7 @@ export const useUserActions = ({
         }
 
         try {
-            const response = await axios.patch('http://localhost:8000/api/users', dataToUpdate, {
+            const response = await axios.patch(`${URL_API}/users`, dataToUpdate, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`
                 }
@@ -121,18 +101,20 @@ export const useUserActions = ({
         setTempUserData(null);
         setTempPassword(null);
         setTempConfirmPassword(null);
+        setIsChangingPassword(false);
     };
 
     const resetState = () => {
-    setUserData(null);
-    setIsEditing(false);
-    setTempUserData(null);
-    setShowPassword(false);
-    setTempPassword(null);
-    setTempConfirmPassword(null);
-    setDialogOpen(false);
-    setDialogAction(null);
-};
+        setUserData(null);
+        setIsEditing(false);
+        setTempUserData(null);
+        setShowPassword(false);
+        setTempPassword(null);
+        setTempConfirmPassword(null);
+        setDialogOpen(false);
+        setDialogAction(null);
+        setIsChangingPassword(false);
+    };
 
     return {
         handleLogout,
@@ -142,6 +124,7 @@ export const useUserActions = ({
         setTempConfirmPassword,
         tempConfirmPassword,
         tempPassword,
-        resetState 
+        resetState,
+        setIsChangingPassword
     };
 };

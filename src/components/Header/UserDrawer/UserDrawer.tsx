@@ -1,6 +1,10 @@
 import { FC, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Props, UserData, useUserActions } from '../../hooks/useUserActions';
+
+import { useUserActions } from '../../../hooks/useUserActions';
+import { Props, UserData, ValidationErrors } from '../../../types';
+import { URL_API } from '../../../constants/constantsApp';
+import { validateUserData } from './validationForm';
 
 import { Drawer, Box, Button, Typography, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
@@ -14,8 +18,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import DoneIcon from '@mui/icons-material/Done';
 import SettingsIcon from '@mui/icons-material/Settings';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+import Loader from '../../Loader';
 
 const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
+    const [loading, setLoading] = useState(false);
+
     const [userData, setUserData] = useState<UserData | null>(null);
     const [dialogAction, setDialogAction] = useState<null | 'logout' | 'delete' | 'save'>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -23,6 +30,8 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
     const [tempUserData, setTempUserData] = useState<UserData | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+    const [errors, setErrors] = useState<ValidationErrors>({});
 
     const {
         handleLogout,
@@ -41,21 +50,24 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
         setTempUserData,
         setShowPassword,
         setDialogOpen,
-        setDialogAction
+        setDialogAction,
+        setIsChangingPassword
     });
     
     const handleClose = () => {
         resetState();
         onClose();
+        setErrors({})
     };
 
     useEffect(() => {
         if (open && authToken && !userData) {
             const fetchUserData = async () => {
+                setLoading(true);
                 if (!authToken || userData) return;
     
                 try {
-                    const response = await axios.get('http://localhost:8000/api/current-user', {
+                    const response = await axios.get(`${URL_API}/current-user`, {
                         headers: {
                             'Authorization': `Bearer ${authToken}`
                         }
@@ -64,6 +76,7 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
                 } catch (error) {
                     console.error("Error fetching user data:", error);
                 }
+                setLoading(false);
             };
             fetchUserData();
         }
@@ -84,13 +97,6 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
         setDialogOpen(true);
     }, []);
 
-    const promptSave = useCallback(() => {
-        if (tempUserData) {
-            setDialogAction('save');
-            setDialogOpen(true);
-        }
-    }, [tempUserData]);
-
     const confirmAction = async () => {
         closeDialog();
         if (dialogAction === 'logout') {
@@ -101,7 +107,6 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
             await handleSave(tempUserData);
         }
     };
-
     
     const handleEdit = () => {
         setTempUserData(userData);
@@ -116,9 +121,32 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
         setShowPassword(prevShow => !prevShow);
     };
 
+    const promptSave = useCallback(() => {
+        if (tempUserData && tempUserData.name && tempUserData.email) {
+            const wantsToChangePassword = tempPassword !== null || tempConfirmPassword !== null;
+
+            const validationErrors = validateUserData({
+                name: tempUserData.name,
+                email: tempUserData.email,
+                password: tempPassword,
+                confirmPassword: tempConfirmPassword,
+                validatePassword: wantsToChangePassword,
+            });
+
+            setErrors(validationErrors);
+
+            if (Object.keys(validationErrors).length === 0) {
+                setDialogAction('save');
+                setDialogOpen(true);
+            }
+        } else {
+            setErrors({ name: "Пожалуйста, заполните все поля формы." });
+        }
+    }, [tempUserData, tempPassword, tempConfirmPassword, setErrors, setDialogAction, setDialogOpen]);
+
     return (
         <div>
-            <Dialog open={dialogOpen} onClose={closeDialog}>
+            <Dialog open={dialogOpen} onClose={closeDialog} hideBackdrop>
                 <DialogTitle textAlign='center' sx={{ fontWeight: 'bold' }}>{"Подтверждение"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -139,8 +167,12 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
                 </DialogActions>
             </Dialog>
             <Drawer anchor="right" open={open} onClose={handleClose}>
-                {isEditing ? (
-                    <Box padding={2} display="flex" flexDirection="column" justifyContent='center' marginTop='70px'>
+                {loading ? (
+                    <Box marginTop='100px'>
+                        <Loader />
+                    </Box>
+                ) : isEditing ? (
+                    <Box sx={{ boxShadow: ' 0px 4px 30px -10px rgba(0, 0, 0, 1)', borderRadius: '4px' }} margin={1} padding={2} display="flex" flexDirection="column" justifyContent='center' marginTop='70px'>
                         <Typography sx={{ fontWeight: 'bold', marginBottom: '30px' }} variant="h6" marginBottom={2}>Редактировать профиль</Typography>
                         <Box sx={{ marginBottom: '50px' }}>
                             <Box marginY={2}>
@@ -148,6 +180,8 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
                                     label="Имя"
                                     variant="outlined"
                                     fullWidth
+                                    error={!!errors.name}
+                                    helperText={errors.name}
                                     value={tempUserData?.name || ''}
                                     onChange={e => setTempUserData(prev => prev ? { ...prev, name: e.target.value } : null)}
                                 />
@@ -159,6 +193,8 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
                                     variant="outlined"
                                     type="email"
                                     fullWidth
+                                    error={!!errors.email}
+                                    helperText={errors.email}
                                     value={tempUserData?.email || ''}
                                     onChange={e => setTempUserData(prev => prev ? { ...prev, email: e.target.value } : null)}
                                 />
@@ -172,6 +208,8 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
                                             variant="outlined"
                                             type={showPassword ? 'text' : 'password'}
                                             fullWidth
+                                            error={!!errors.password}
+                                            helperText={errors.password}
                                             value={tempPassword || ''}
                                             onChange={e => setTempPassword(e.target.value)}
                                             InputProps={{
@@ -190,6 +228,8 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
                                             variant="outlined"
                                             type={showPassword ? 'text' : 'password'}
                                             fullWidth
+                                            error={!!errors.confirmPassword}
+                                            helperText={errors.confirmPassword}
                                             value={tempConfirmPassword || ''}
                                             onChange={e => setTempConfirmPassword(e.target.value)}
                                             InputProps={{
@@ -226,19 +266,26 @@ const UserDrawer: FC<Props> = ({ open, onClose, authToken }) => {
                             <Button sx={{ marginRight: '5px' }} color="error" variant="contained" onClick={() => {
                                 setIsEditing(false);
                                 setTempUserData(null);
+                                setTempPassword(null);
+                                setTempConfirmPassword(null);
+                                setIsChangingPassword(false);
+                                setErrors({})
                             }}>
                                 <CloseIcon />
                                 Отмена
                             </Button>
-                            <Button color="success" variant="contained" onClick={promptSave}>
+                            <Button
+                                color="success"
+                                variant="contained"
+                                onClick={promptSave}
+                            >
                                 <DoneIcon />
                                 Сохранить
                             </Button>
-
                         </Box>
                     </Box>
                 ) : userData && (
-                    <Box marginTop='90px' padding={2} display="flex" flexDirection="column" justifyContent="space-between" alignItems="center">
+                    <Box sx={{ boxShadow: '0px 4px 30px -10px rgba(0, 0, 0, 1)', borderRadius: '4px' }} margin={1} marginTop='90px' padding={2} display="flex" flexDirection="column" justifyContent="space-between" alignItems="center">
                         <Typography
                             width='100%'
                             display="flex"

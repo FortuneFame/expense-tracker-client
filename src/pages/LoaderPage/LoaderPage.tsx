@@ -1,9 +1,10 @@
+import { FC } from "react";
 import Loader from "../../components/Loader";
 import "./LoaderPage.scss";
 
-const LoaderPage = () => {
+const LoaderPage:FC = () => {
     return (
-    <div>
+    <div className="loader-page">
       <Loader />
     </div>
   );

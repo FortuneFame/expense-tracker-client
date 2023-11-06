@@ -1,11 +1,15 @@
 import { FC } from 'react';
 import { Typography, Container, Button, Grid } from '@mui/material';
-
-const handleButtonClick = () => {
-    window.location.href = '/auth';
-  };
+import { useNavigate } from 'react-router-dom';
 
 const Start: FC = () => {
+
+    const navigate = useNavigate();
+
+    const handleButtonClick = () => {
+        navigate('/auth');
+    };
+    
     return (
         <Container>
             <Typography variant="h2" gutterBottom>
@@ -59,7 +63,7 @@ const Start: FC = () => {
             </Grid>
 
             <Button variant="contained" color="primary" style={{ marginTop: '20px' }} onClick={handleButtonClick}>
-                Начать использование 
+                Начать использование
             </Button>
         </Container>
     );
