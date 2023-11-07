@@ -98,34 +98,60 @@ export interface TransactionData {
   type: 'income' | 'expense'; 
 }
 
-export interface AccountReference {
+// export interface AccountReference {
+//   id: number;
+//   name: string;
+// }
+
+// export interface Income {
+//   id: number;
+//   description: string;
+//   amount: number;
+//   createdAt: Date;
+//   account: AccountReference;
+// }
+
+// export interface Expense {
+//   id: number;
+//   description: string;
+//   amount: number;
+//   createdAt: Date;
+//   account: AccountReference;
+// }
+
+
+
+// export interface AccountSummaryResponse {
+  //     incomes: Income[];
+  //     expenses: Expense[];
+  // }
+  
+  export interface AccountHistoryProps {
+  authToken: string | null;
+    account: AccountType;
+  }
+export interface Account {
   id: number;
   name: string;
 }
 
-export interface Income {
+export interface Transaction {
   id: number;
   description: string;
-  amount: number; 
-  createdAt: Date;
-  account: AccountReference;
-}
-
-export interface Expense {
-  id: number;
-  description: string;
+  createdAt: string;
+  account: Account;
   amount: number;
-  createdAt: Date;
-  account: AccountReference;
 }
 
-
-export interface AccountHistoryProps {
-authToken: string | null; 
-  account: AccountType;
+export interface TransactionsResponse {
+  incomes: Transaction[];
+  expenses: Transaction[];
 }
 
 export interface AccountSummaryResponse {
-    incomes: Income[];
-    expenses: Expense[];
+  status: boolean;
+  message: string;
+  data: TransactionsResponse;
 }
+
+

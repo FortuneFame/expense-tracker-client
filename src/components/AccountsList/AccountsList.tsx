@@ -4,6 +4,7 @@ import { useAccounts } from '../../hooks/useAccounts';
 import { AccountType, PropsAccountsList } from '../../types';
 import Expense from '../Expense/Expense';
 import Income from '../Income';
+import AccountHistory from '../AccountHistory';
 
 const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }> => {
     const response = await fetch(`${URL_API}/account`, {
@@ -119,8 +120,9 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                 const isEditing = editingStates[account.id] || false;
                 const createdAt = new Date(account.createdAt).toLocaleString();
                 const updatedAt = new Date(account.updatedAt).toLocaleString();
-
+                
                 return (
+                  
                     <div key={account.id} className="account-card">
                         {isEditing ? (
                             <>
@@ -147,7 +149,9 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                                 <h3>{account.name}</h3>
                                 <p>Баланс: {account.balance}</p>
                                 <p>Дата создания: {createdAt}</p>
-                                <p>Последнее изменение: {updatedAt}</p>
+                                    <p>Последнее изменение: {updatedAt}</p>
+                                    
+                                    
                                 <button onClick={() => setEditingStates(prev => ({ ...prev, [account.id]: true }))}>Редактировать название</button>
                                 <button
                                     onClick={() => handleDeleteAccount(account.id)}
@@ -155,6 +159,7 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                                 >
                                     Удалить счет
                                 </button>
+                                <AccountHistory key={account.id} account={account} authToken={authToken} />
                             </>
                         )}
                     </div>
