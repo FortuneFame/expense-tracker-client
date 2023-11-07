@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import axios from 'axios';
-import { URL_API } from '../constants/constantsApp';
+import { URL_API } from '../../constants/constantsApp';
 import { useNavigate } from 'react-router-dom';
-import { UseUserActionsProps, UserData } from '../types';
+import { UseUserActionsProps, UserData } from '../../types';
 
 export const useUserActions = ({
     authToken,

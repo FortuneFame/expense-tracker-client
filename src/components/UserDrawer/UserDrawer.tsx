@@ -1,14 +1,14 @@
 import { FC, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-import { useAccounts } from '../../../hooks/useAccounts';
-import { useUserActions } from '../../../hooks/useUserActions';
-import { Props, UserData, ValidationErrors } from '../../../types';
-import { URL_API } from '../../../constants/constantsApp';
+import { useAccounts } from '../../hooks/useAccounts';
+import { useUserActions } from './useUserActions';
+import { Props, UserData, ValidationErrors } from '../../types';
+import { URL_API } from '../../constants/constantsApp';
 import { validateUserData } from './validationForm';
 
-import Loader from '../../Loader';  
-import TotalBalance from '../../TotalBalance/TotalBalance';
+import Loader from '../Loader';  
+import TotalBalance from '../TotalBalance';
 
 import { Drawer, Box, Button, Typography, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import IconButton from '@mui/material/IconButton';

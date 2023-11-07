@@ -7,7 +7,8 @@ import Account from '../../components/Account';
 import Header from '../../components/Header/Header';
 import AccountsList from '../../components/AccountsList';
 import { useAccounts } from '../../hooks/useAccounts';
-// import Expense from '../../components/Expense/Expense';
+import AccountHistory from '../../components/AccountHistory/AccountHistory';
+
 
 const HomeContent: FC = () => {
     const authToken = useAuth();
@@ -17,10 +18,22 @@ const HomeContent: FC = () => {
         <div>
             <Header />
             <Account authToken={authToken} />
-            <AccountsList authToken={authToken} />
+            {/* <AccountsList authToken={authToken} />
+            <AccountHistory account={accounts[0]} authToken={authToken}/>
             {accounts.length > 0 ? (
                 <>
                 </>
+            ) : (
+                <div>
+                    <h2>Откройте финансовую свободу с помощью умного бюджетирования!</h2>
+                    <p>Создайте бюджет, чтобы начать.</p>
+                </div>
+            )} */}
+            <AccountsList authToken={authToken} />
+            {accounts.length > 0 ? (
+                accounts.map((accountItem) => (
+                    <AccountHistory key={accountItem.id} account={accountItem} authToken={authToken}/>
+                ))
             ) : (
                 <div>
                     <h2>Откройте финансовую свободу с помощью умного бюджетирования!</h2>

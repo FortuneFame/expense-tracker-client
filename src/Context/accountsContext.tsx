@@ -1,6 +1,6 @@
-import React from 'react';
+import { createContext } from 'react';
 import { AccountsContextType } from '../types';
 
-const AccountsContext = React.createContext<AccountsContextType | undefined>(undefined);
+const AccountsContext = createContext<AccountsContextType | undefined>(undefined);
 
 export default AccountsContext;

@@ -1,40 +1,31 @@
-import { FC, useEffect, useRef, useState } from 'react';
-
-import { useFetcher } from 'react-router-dom';
-import { URL_API } from '../../constants/constantsApp';
+import { FC, FormEvent, useEffect, useRef, useState } from 'react';
 import { useAccounts } from '../../hooks/useAccounts';
-import { AccountType } from '../../types';
+import { AccountFormData } from '../../types';
+import { URL_API } from '../../constants/constantsApp';
 
 type PropsAccount = {
     authToken: string | null;
 }
 
 const Account: FC<PropsAccount> = ({ authToken }) => {
-    const [refreshTrigger, setRefreshTrigger] = useState<boolean>(false);
     const { accounts, setAccounts } = useAccounts();
-    
-    const fetcher = useFetcher();
-    const isSubmitting = fetcher.state === "submitting";
-
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const formRef = useRef<HTMLFormElement>(null);
     const focusRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (formRef.current) {
-            formRef.current.reset();
-        }
-
         if (focusRef.current) {
             focusRef.current.focus();
         }
-    }, [isSubmitting]);
-  
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    }, [accounts]);
 
-        const formData: Omit<AccountType, 'id'> = {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+     
+        const formData: Omit<AccountFormData, 'id'> = {
             name: (e.currentTarget.elements.namedItem('name') as HTMLInputElement).value,
-            balance: parseFloat((e.currentTarget.elements.namedItem('balance') as HTMLInputElement).value)
+            balance: parseFloat((e.currentTarget.elements.namedItem('balance') as HTMLInputElement).value),
         };
 
         try {
@@ -54,22 +45,23 @@ const Account: FC<PropsAccount> = ({ authToken }) => {
             }
 
             const responseData = await response.json();
-            const newAccounts = [...accounts, responseData.data];
-            setAccounts(newAccounts);
+            setAccounts([...accounts, responseData.data]);
 
-            setRefreshTrigger(!refreshTrigger);
+      
+            formRef.current?.reset();
             console.log('Отправляемые данные:', formData);
+
+            setIsSubmitting(false);
         } catch (error) {
             console.error('Ошибка:', error);
         }
     };
     
     return (
-    
-        <div >
-            <h2 className="h3">Создать бюджет</h2>
-            <form onSubmit={handleSubmit} className="grid-sm">
-                <div className="grid-xs">
+        <div>
+            <h2>Создать бюджет</h2>
+            <form onSubmit={handleSubmit} ref={formRef}>
+                <div>
                     <label htmlFor="name">Название бюджета</label>
                     <input
                         type="text"
@@ -80,7 +72,7 @@ const Account: FC<PropsAccount> = ({ authToken }) => {
                         ref={focusRef}
                     />
                 </div>
-                <div className="grid-xs">
+                <div>
                     <label htmlFor="balance">Сумма</label>
                     <input
                         type="number"
@@ -93,18 +85,16 @@ const Account: FC<PropsAccount> = ({ authToken }) => {
                     />
                 </div>
                 <input type="hidden" name="_action" value="createBudget" />
-                <button type="submit" className="btn" disabled={isSubmitting}>
+                <button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? (
                         <span>Отправка...</span>
                     ) : (
-                        <>
-                            <span>Создать бюджет</span>
-                        </>
+                        <span>Создать бюджет</span>
                     )}
                 </button>
             </form>
         </div>
-    )
+    );
 };
 
 export default Account;

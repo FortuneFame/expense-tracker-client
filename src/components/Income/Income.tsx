@@ -2,33 +2,27 @@ import { FC, useState } from 'react';
 import { URL_API } from '../../constants/constantsApp';
 import { AccountType } from '../../types';
 
-interface ExpenseProps {
+interface IncomeProps {
   authToken: string;
-  onExpenseAdded: () => void;
+  onIncomeAdded: () => void;
   accounts: AccountType[];
 }
 
-const Expense: FC<ExpenseProps> = ({ authToken, accounts, onExpenseAdded }) => {
+const Income: FC<IncomeProps> = ({ authToken, accounts, onIncomeAdded }) => {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [accountId, setAccountId] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [selectedAccount, setSelectedAccount] = useState<AccountType | null>(null);
-    
+
     const handleAccountChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const account = accounts.find(account => account.id.toString() === e.target.value);
         setAccountId(e.target.value);
-        setSelectedAccount(account || null);
     };
 
-    const handleCreateExpense = async (event: React.FormEvent) => {
+    const handleCreateIncome = async (event: React.FormEvent) => {
         event.preventDefault();
-        if (selectedAccount && Number(amount) > selectedAccount.balance) {
-            setError('На счету недостаточно средств для данной операции');
-            return;
-        }
+
         try {
-            const response = await fetch(`${URL_API}/expense`, {
+            const response = await fetch(`${URL_API}/income`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -36,35 +30,35 @@ const Expense: FC<ExpenseProps> = ({ authToken, accounts, onExpenseAdded }) => {
                 },
                 body: JSON.stringify({
                     description,
-                    expense: Number(amount),
+                    income: Number(amount),
                     account_id: Number(accountId),
                 }),
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Ошибка при создании расхода');
+                throw new Error(errorData.message || 'Ошибка при создании дохода');
             }
 
             setDescription('');
             setAmount('');
             setAccountId('');
             setError(null);
-            onExpenseAdded();
+            onIncomeAdded();
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message);
             } else {
-                setError('Произошла ошибка при создании расхода');
+                setError('Произошла ошибка при создании дохода');
             }
         }
     };
 
     return (
-        <form onSubmit={handleCreateExpense}>
-            <h2>Добавление расхода</h2>
+        <form onSubmit={handleCreateIncome}>
+            <h2>Добавление дохода</h2>
             <div>
-                <label>Название расхода</label>
+                <label>Описание дохода</label>
                 <input
                     type="text"
                     value={description}
@@ -96,10 +90,10 @@ const Expense: FC<ExpenseProps> = ({ authToken, accounts, onExpenseAdded }) => {
                     ))}
                 </select>
             </div>
-            <button type="submit">Добавить расход</button>
+            <button type="submit">Добавить доход</button>
             {error && <p className="error">{error}</p>}
         </form>
     );
 };
 
-export default Expense;
+export default Income;

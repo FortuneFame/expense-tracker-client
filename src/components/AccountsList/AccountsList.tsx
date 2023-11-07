@@ -3,6 +3,7 @@ import { URL_API } from '../../constants/constantsApp';
 import { useAccounts } from '../../hooks/useAccounts';
 import { AccountType, PropsAccountsList } from '../../types';
 import Expense from '../Expense/Expense';
+import Income from '../Income';
 
 const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }> => {
     const response = await fetch(`${URL_API}/account`, {
@@ -16,8 +17,8 @@ const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }>
     if (!response.ok) {
         throw new Error('Ошибка при получении данных');
     }
-
     return await response.json();
+    
 }
 
 const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
@@ -27,6 +28,7 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
     const [error, setError] = useState<string | null>(null);
     const [editingStates, setEditingStates] = useState<Record<number, boolean>>({});
     const [editedNames, setEditedNames] = useState<Record<number, string>>({});
+    const [deletingAccount, setDeletingAccount] = useState<number | null>(null);
 
     useEffect(() => {
         if (authToken) {
@@ -51,6 +53,7 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
     if (error) return <p>Ошибка: {error as string}</p>;
         
     const handleEditAccountName = async (id: number, name: string) => {
+        
         try {
             const response = await fetch(`${URL_API}/account/${id}`, {
                 method: 'PUT',
@@ -60,13 +63,13 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                 },
                 body: JSON.stringify({ name })
             });
-        
+            
             if (!response.ok) {
                 throw new Error('Ошибка при обновлении имени счета');
             }
-        
+            
             setRefreshTrigger(!refreshTrigger);
-        
+            
         } catch (error: unknown) {
             if (error instanceof Error) {
                 setError(error.message);
@@ -76,39 +79,46 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
         }
     };
 
-   const handleDeleteAccount = async (id: number) => {
-    try {
-        const response = await fetch(`${URL_API}/account/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
+    const handleDeleteAccount = async (id: number) => {
+        const previousAccounts = accounts;
+
+        const newAccounts = accounts.filter(account => account.id !== id);
+        setAccounts(newAccounts);
+
+        try {
+            const response = await fetch(`${URL_API}/account/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+
+            if (!response.ok) {
+                setAccounts(previousAccounts);
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Ошибка при удалении счета');
             }
-        });
-    
-        if (!response.ok) {
-            const errorData = await response.json(); // Добавлена обработка JSON ответа для получения сообщения об ошибке
-            throw new Error(errorData.message || 'Ошибка при удалении счета');
+
+        } catch (error) {
+            setAccounts(previousAccounts);
+            if (error instanceof Error) {
+                setError(error.message);
+            } else {
+                setError("Неизвестная ошибка");
+            }
+        } finally {
+            setDeletingAccount(null);
         }
+    };
 
-        setRefreshTrigger(!refreshTrigger); // Триггер для обновления списка счетов
-        
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            setError(error.message);
-        } else {
-            setError("Неизвестная ошибка");
-        }
-    }
-};
-
-
-    
     return (
         <div>
             {accounts.length > 0 && <h2>Существующие бюджеты</h2>}
             {Array.isArray(accounts) && accounts.map(account => {
                 const isEditing = editingStates[account.id] || false;
+                const createdAt = new Date(account.createdAt).toLocaleString();
+                const updatedAt = new Date(account.updatedAt).toLocaleString();
 
                 return (
                     <div key={account.id} className="account-card">
@@ -124,20 +134,36 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                                 }}>
                                     Сохранить
                                 </button>
+                                <button onClick={() => {
+                                    setEditingStates(prev => ({ ...prev, [account.id]: false }));
+                                    setEditedNames(prev => ({ ...prev, [account.id]: account.name }));
+                                }}>
+                                    Отмена
+                                </button>
+
                             </>
                         ) : (
                             <>
                                 <h3>{account.name}</h3>
                                 <p>Баланс: {account.balance}</p>
+                                <p>Дата создания: {createdAt}</p>
+                                <p>Последнее изменение: {updatedAt}</p>
                                 <button onClick={() => setEditingStates(prev => ({ ...prev, [account.id]: true }))}>Редактировать название</button>
-                                <button onClick={() => handleDeleteAccount(account.id)}>Удалить счет</button>
+                                <button
+                                    onClick={() => handleDeleteAccount(account.id)}
+                                    disabled={deletingAccount === account.id}
+                                >
+                                    Удалить счет
+                                </button>
                             </>
                         )}
                     </div>
                 );
             })}
-           {authToken && accounts.length > 0 && <Expense authToken={authToken} onExpenseAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />}
-
+            {authToken && accounts.length > 0 &&
+                <Expense authToken={authToken} onExpenseAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />
+            }
+            {authToken && <Income authToken={authToken} onIncomeAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />}
         </div>
     );
 };

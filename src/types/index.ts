@@ -62,7 +62,15 @@ export type AccountType = {
     id: number;
     name: string;
     balance: number;
+    createdAt: string; 
+    updatedAt: string; 
 }
+
+export type AccountFormData = {
+  name: string;
+  balance: number;
+};
+
 
 export type ValidationErrors = {
     name?: string;
@@ -81,3 +89,43 @@ export type ExpenseType = {
     description: string;
     amount: number;
 };
+
+export interface TransactionData {
+  id: string;
+  date: string;
+  description: string;
+  amount: number; 
+  type: 'income' | 'expense'; 
+}
+
+export interface AccountReference {
+  id: number;
+  name: string;
+}
+
+export interface Income {
+  id: number;
+  description: string;
+  amount: number; 
+  createdAt: Date;
+  account: AccountReference;
+}
+
+export interface Expense {
+  id: number;
+  description: string;
+  amount: number;
+  createdAt: Date;
+  account: AccountReference;
+}
+
+
+export interface AccountHistoryProps {
+authToken: string | null; 
+  account: AccountType;
+}
+
+export interface AccountSummaryResponse {
+    incomes: Income[];
+    expenses: Expense[];
+}

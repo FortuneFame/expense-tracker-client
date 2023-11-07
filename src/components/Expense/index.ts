@@ -1,1 +1,1 @@
-// export { default } from './TotalBalance';
+export { default } from './Expense';

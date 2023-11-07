@@ -1,4 +1,4 @@
-import { ValidationErrors } from "../../../types";
+import { ValidationErrors } from "../../types";
 
 const MIN_PASSWORD_LENGTH = 6;
 

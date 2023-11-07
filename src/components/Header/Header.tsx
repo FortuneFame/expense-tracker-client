@@ -7,7 +7,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 
-export const UserDrawer = lazy(() => import('./UserDrawer'));
+export const UserDrawer = lazy(() => import('../UserDrawer'));
 
 const Header: FC = () => {
     const authToken = useAuth();
