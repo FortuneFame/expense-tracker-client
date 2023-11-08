@@ -2,8 +2,8 @@ import { FC, useEffect, useState } from 'react';
 import { URL_API } from '../../constants/constantsApp';
 import { useAccounts } from '../../hooks/useAccounts';
 import { AccountType, PropsAccountsList } from '../../types';
-import Expense from '../Expense/Expense';
-import Income from '../Income';
+import Expense from '../CreateExpense/CreateExpense';
+import Income from '../CreateIncome';
 import AccountHistory from '../AccountHistory';
 
 const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }> => {
@@ -24,7 +24,6 @@ const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }>
 
 const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
     const { accounts, setAccounts, refreshTrigger, setRefreshTrigger } = useAccounts();
-
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [editingStates, setEditingStates] = useState<Record<number, boolean>>({});
@@ -159,7 +158,7 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                                 >
                                     Удалить счет
                                 </button>
-                                <AccountHistory key={account.id} account={account} authToken={authToken} />
+                                <AccountHistory key={account.id} setAccounts={setAccounts} refreshTrigger={refreshTrigger}  account={account} authToken={authToken} />
                             </>
                         )}
                     </div>

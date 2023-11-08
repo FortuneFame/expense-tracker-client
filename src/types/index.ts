@@ -2,8 +2,8 @@ import { ReactNode } from "react";
 
 export interface AccountsContextType {
   accounts: AccountType[];
-  setAccounts: (accounts: AccountType[]) => void;
- refreshTrigger: boolean;
+  refreshTrigger: boolean;
+  setAccounts: React.Dispatch<React.SetStateAction<AccountType[]>>;
     setRefreshTrigger: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -98,41 +98,59 @@ export interface TransactionData {
   type: 'income' | 'expense'; 
 }
 
-// export interface AccountReference {
-//   id: number;
-//   name: string;
-// }
+export interface AccountReference {
+  id: number;
+  name: string;
+}
 
-// export interface Income {
-//   id: number;
-//   description: string;
-//   amount: number;
-//   createdAt: Date;
-//   account: AccountReference;
-// }
+export interface Income {
+  id: number;
+  description: string;
+  amount: number;
+  createdAt: Date;
+  account: AccountReference;
+}
 
-// export interface Expense {
-//   id: number;
-//   description: string;
-//   amount: number;
-//   createdAt: Date;
-//   account: AccountReference;
-// }
-
-
-
-// export interface AccountSummaryResponse {
-  //     incomes: Income[];
-  //     expenses: Expense[];
-  // }
+export interface Expense {
+  id: number;
+  description: string;
+  amount: number;
+  createdAt: Date;
+  account: AccountReference;
+  previousAmount?: number;
+}
   
   export interface AccountHistoryProps {
   authToken: string | null;
     account: AccountType;
+    setAccounts: React.Dispatch<React.SetStateAction<AccountType[]>>;
+     refreshTrigger: boolean; 
   }
 export interface Account {
   id: number;
   name: string;
+}
+
+export interface EditIncomeProps {
+  income: Income;
+  authToken: string | null;
+  onIncomeUpdated: (updatedIncome: Income) => void; 
+}
+export interface EditExpenseProps {
+  expense: Expense;
+  authToken: string | null;
+  onExpenseUpdated: (updatedExpense: Expense) => void;
+}
+
+export interface DeleteIncomeProps {
+  incomeId: number;
+  authToken:  string | null;
+  onIncomeDeleted: (incomeId: number) => void;
+}
+export interface DeleteExpenseProps {
+  expenseId: number;
+  authToken:  string | null;
+  onExpenseDeleted: (incomeId: number) => void;
 }
 
 export interface Transaction {
@@ -144,8 +162,8 @@ export interface Transaction {
 }
 
 export interface TransactionsResponse {
-  incomes: Transaction[];
-  expenses: Transaction[];
+  incomes: Income[];
+  expenses: Expense[];
 }
 
 export interface AccountSummaryResponse {
