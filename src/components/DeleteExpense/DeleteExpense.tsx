@@ -13,11 +13,11 @@ const DeleteExpense: FC<DeleteExpenseProps> = ({ expenseId, authToken, onExpense
           },
         });
         if (!response.ok) {
-  const errorData = await response.json(); // Assuming the server sends a JSON response for errors
-  console.error('Error updating expense:', errorData.message);
-  alert(`Failed to update expense: ${errorData.message}`);
-  return;
-}
+          const errorData = await response.json(); 
+          console.error('Error updating expense:', errorData.message);
+          alert(`Failed to update expense: ${errorData.message}`);
+          return;
+        }
         onExpenseDeleted(expenseId);
       } catch (error) {
         console.error('Error deleting expense:', error);

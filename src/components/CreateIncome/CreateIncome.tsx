@@ -8,7 +8,7 @@ interface IncomeProps {
   accounts: AccountType[];
 }
 
-const Income: FC<IncomeProps> = ({ authToken, accounts, onIncomeAdded }) => {
+const CreateIncome: FC<IncomeProps> = ({ authToken, accounts, onIncomeAdded }) => {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [accountId, setAccountId] = useState('');
@@ -96,4 +96,4 @@ const Income: FC<IncomeProps> = ({ authToken, accounts, onIncomeAdded }) => {
     );
 };
 
-export default Income;
+export default CreateIncome;

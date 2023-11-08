@@ -7,7 +7,7 @@ type PropsAccount = {
     authToken: string | null;
 }
 
-const Account: FC<PropsAccount> = ({ authToken }) => {
+const AccountCreate: FC<PropsAccount> = ({ authToken }) => {
     const { accounts, setAccounts } = useAccounts();
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const formRef = useRef<HTMLFormElement>(null);
@@ -97,4 +97,4 @@ const Account: FC<PropsAccount> = ({ authToken }) => {
     );
 };
 
-export default Account;
+export default AccountCreate;

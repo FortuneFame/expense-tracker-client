@@ -2,9 +2,10 @@ import { FC, useEffect, useState } from 'react';
 import { URL_API } from '../../constants/constantsApp';
 import { useAccounts } from '../../hooks/useAccounts';
 import { AccountType, PropsAccountsList } from '../../types';
-import Expense from '../CreateExpense/CreateExpense';
+
 import Income from '../CreateIncome';
 import AccountHistory from '../AccountHistory';
+import CreateExpense from '../CreateExpense/CreateExpense';
 
 const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }> => {
     const response = await fetch(`${URL_API}/account`, {
@@ -24,6 +25,7 @@ const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }>
 
 const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
     const { accounts, setAccounts, refreshTrigger, setRefreshTrigger } = useAccounts();
+
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [editingStates, setEditingStates] = useState<Record<number, boolean>>({});
@@ -158,14 +160,16 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                                 >
                                     Удалить счет
                                 </button>
-                                <AccountHistory key={account.id} setAccounts={setAccounts} refreshTrigger={refreshTrigger}  account={account} authToken={authToken} />
+                                <AccountHistory refreshTrigger={refreshTrigger}
+  setRefreshTrigger={setRefreshTrigger} // Make sure this line is correct
+  setAccounts={setAccounts}  account={account} authToken={authToken} />
                             </>
                         )}
                     </div>
                 );
             })}
             {authToken && accounts.length > 0 &&
-                <Expense authToken={authToken} onExpenseAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />
+                <CreateExpense authToken={authToken} onExpenseAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />
             }
             {authToken && <Income authToken={authToken} onIncomeAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />}
         </div>

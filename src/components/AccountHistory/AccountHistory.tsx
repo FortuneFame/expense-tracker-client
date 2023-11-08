@@ -1,18 +1,13 @@
 import { useState, useEffect, FC } from 'react';
 import { URL_API } from '../../constants/constantsApp';
-import { AccountHistoryProps, AccountSummaryResponse, Expense, Income, TransactionsResponse } from '../../types';
-import EditIncome from '../EditIncome';
-import DeleteIncome from '../DeleteIncome';
-import EditExpense from '../EditExpense';
-import DeleteExpense from '../DeleteExpense';
-import { useAccounts } from '../../hooks/useAccounts';
+import { AccountHistoryProps, AccountSummaryResponse, TransactionsResponse } from '../../types';
 
-const AccountHistory: FC<AccountHistoryProps> = ({ authToken, account, refreshTrigger }) => {
+export type TransactionType = 'income' | 'expense';
+
+const AccountHistory: FC<AccountHistoryProps> = ({ authToken, account, refreshTrigger, setAccounts, setRefreshTrigger }) => {
   const [transactions, setTransactions] = useState<TransactionsResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  const { setAccounts, setRefreshTrigger } = useAccounts();
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -43,99 +38,45 @@ const AccountHistory: FC<AccountHistoryProps> = ({ authToken, account, refreshTr
     }
   }, [authToken, account, refreshTrigger]);
 
-  const handleIncomeUpdate = (updatedIncome: Income) => {
-    setTransactions((prevTransactions) => {
-      if (!prevTransactions) return null;
-      const updatedIncomes = prevTransactions.incomes.map((income) =>
-        income.id === updatedIncome.id ? { ...income, ...updatedIncome } : income
-      );
-      return { ...prevTransactions, incomes: updatedIncomes };
-    });
-  };
+  const deleteTransaction = async (type: TransactionType, transactionId: number) => {
+    try {
+      
+      const endpoint = type === 'income' ? `/income/${transactionId}` : `/expense/${transactionId}`;
+      const response = await fetch(`${URL_API}${endpoint}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
 
-  const handleIncomeDelete = (incomeId: number) => {
-    setTransactions((prevTransactions) => {
-      if (!prevTransactions) return null;
-      const updatedIncomes = prevTransactions.incomes.filter((income) => income.id !== incomeId);
-      return { ...prevTransactions, incomes: updatedIncomes };
-    });
-  };
-
-  const handleExpenseDelete = (expenseId: number) => {
-    setTransactions((prevTransactions) => {
-      if (!prevTransactions) return null;
-      const updatedExpenses = prevTransactions.expenses.filter((expense) => expense.id !== expenseId);
-      return { ...prevTransactions, expenses: updatedExpenses };
-    });
-  };
-  
-  // const handleExpenseUpdate = (updatedExpense: Expense) => {
-  //   if (!updatedExpense.account) {
-  //     console.error('Updated expense does not have an associated account.');
-  //     return;
-  //   } if (!updatedExpense || !updatedExpense.account || typeof updatedExpense.previousAmount !== 'number') {
-  //     console.error('Invalid expense data');
-  //     return;
-  //   }
-  //   setTransactions((prevTransactions) => {
-  //     if (!prevTransactions) return null;
-  //     const updatedExpenses = prevTransactions.expenses.map((expense) =>
-  //       expense.id === updatedExpense.id ? { ...expense, ...updatedExpense } : expense
-  //     );
-  //     return { ...prevTransactions, expenses: updatedExpenses };
-  //   });
-
-  //   setAccounts((prevAccounts: AccountType[]) => {
-  //     return prevAccounts.map((acc: AccountType) => {
-  //       if (acc.id === updatedExpense.account.id) {
-  //         const oldExpenseAmount = updatedExpense.previousAmount || 0;
-  //         const balanceDifference = updatedExpense.amount - oldExpenseAmount;
-  //         const newBalance = acc.balance - balanceDifference;
-  //         return { ...acc, balance: newBalance };
-  //       }
-  //       return acc;
-  //     });
-  //   });
-  //   setRefreshTrigger(prev => !prev);
-  // };
-
-  
-
-const handleExpenseUpdate = (updatedExpense: Expense) => {
-  // Проверка наличия аккаунта у расхода
-  if (!updatedExpense.account) {
-    console.error('Updated expense does not have an associated account.');
-    return;
-  }
-
-  // Обновление состояния транзакций
-  setTransactions((prevTransactions) => {
-    if (!prevTransactions) return null;
-    const updatedExpenses = prevTransactions.expenses.map((expense) =>
-      expense.id === updatedExpense.id ? { ...expense, ...updatedExpense } : expense
-    );
-    return { ...prevTransactions, expenses: updatedExpenses };
-  });
-
-  // Обновление состояния аккаунтов
-  setAccounts((prevAccounts) => {
-    return prevAccounts.map((acc) => {
-      if (acc.id === updatedExpense.account.id) {
-        // Вычисление нового баланса
-        const oldExpenseAmount = updatedExpense.previousAmount || 0;
-        const balanceDifference = updatedExpense.amount - oldExpenseAmount;
-        const newBalance = acc.balance - balanceDifference;
-        return { ...acc, balance: newBalance };
+      if (!response.ok) {
+        throw new Error(`Ошибка при удалении ${type === 'income' ? 'дохода' : 'расхода'}`);
       }
-      return acc;
-    });
-  });
 
-  // Обновление UI без перезагрузки страницы
-  setRefreshTrigger(prev => !prev);
-};
+      // Если удаление прошло успешно, обновляем список транзакций
+      setRefreshTrigger((prev: boolean) => !prev);
 
+      // Обновляем баланс счета в состоянии
+      const transaction = transactions && (type === 'income'
+        ? transactions.incomes.find(t => t.id === transactionId)
+        : transactions.expenses.find(t => t.id === transactionId));
+      
+      const amount = transaction ? transaction.amount : 0;
 
+      const updatedAccount = {
+        ...account,
+        balance: type === 'income' ? account.balance + amount : account.balance + amount
+      };
+      setAccounts((prevAccounts) => prevAccounts.map(acc => acc.id === account.id ? updatedAccount : acc));
+      
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Неизвестная ошибка");
+      }
+    }
+  }
 
   if (loading) return <p>Загрузка истории транзакций...</p>;
   if (error) return <p>Ошибка: {error}</p>;
@@ -150,8 +91,7 @@ const handleExpenseUpdate = (updatedExpense: Expense) => {
             {transactions.incomes.map((income) => (
               <li key={income.id}>
                 {income.description} - {income.amount} (Дата: {new Date(income.createdAt).toLocaleDateString()})
-                <EditIncome income={income} authToken={authToken} onIncomeUpdated={handleIncomeUpdate} />
-                <DeleteIncome incomeId={income.id} authToken={authToken} onIncomeDeleted={handleIncomeDelete} />
+                <button onClick={() => deleteTransaction('income', income.id)}>Удалить</button>
               </li>
             ))}
           </ul>
@@ -160,8 +100,7 @@ const handleExpenseUpdate = (updatedExpense: Expense) => {
             {transactions.expenses.map((expense) => (
               <li key={expense.id}>
                 {expense.description} - {expense.amount} (Дата: {new Date(expense.createdAt).toLocaleDateString()})
-                <EditExpense expense={expense} authToken={authToken} onExpenseUpdated={handleExpenseUpdate} />
-                <DeleteExpense expenseId={expense.id} authToken={authToken} onExpenseDeleted={handleExpenseDelete} />
+                <button onClick={() => deleteTransaction('expense', expense.id)}>Удалить</button>
               </li>
             ))}
           </ul>

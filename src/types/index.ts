@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { Dispatch, ReactNode, SetStateAction } from "react";
 
 export interface AccountsContextType {
   accounts: AccountType[];
@@ -63,7 +63,8 @@ export type AccountType = {
     name: string;
     balance: number;
     createdAt: string; 
-    updatedAt: string; 
+  updatedAt: string; 
+    expenses: Expense[];
 }
 
 export type AccountFormData = {
@@ -123,8 +124,9 @@ export interface Expense {
   export interface AccountHistoryProps {
   authToken: string | null;
     account: AccountType;
-    setAccounts: React.Dispatch<React.SetStateAction<AccountType[]>>;
-     refreshTrigger: boolean; 
+ refreshTrigger: boolean; // Ensure this is added
+  setAccounts: Dispatch<SetStateAction<AccountType[]>>;
+  setRefreshTrigger: Dispatch<SetStateAction<boolean>>; // Ensure this is added
   }
 export interface Account {
   id: number;

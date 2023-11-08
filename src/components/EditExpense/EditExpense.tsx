@@ -34,7 +34,7 @@ const EditExpense: FC<EditExpenseProps> = ({ expense, authToken, onExpenseUpdate
         throw new Error('Failed to update expense.');
       }
       const updatedExpense = await response.json();
-      onExpenseUpdated(updatedExpense); // Вызываем обработчик, который должен обновить состояние счетов
+      onExpenseUpdated(updatedExpense); 
     } catch (error) {
       console.error('Error updating expense:', error);
     }

@@ -8,7 +8,7 @@ interface ExpenseProps {
   accounts: AccountType[];
 }
 
-const Expense: FC<ExpenseProps> = ({ authToken, accounts, onExpenseAdded }) => {
+const CreateExpense: FC<ExpenseProps> = ({ authToken, accounts, onExpenseAdded }) => {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [accountId, setAccountId] = useState('');
@@ -102,4 +102,4 @@ const Expense: FC<ExpenseProps> = ({ authToken, accounts, onExpenseAdded }) => {
     );
 };
 
-export default Expense;
+export default CreateExpense;
