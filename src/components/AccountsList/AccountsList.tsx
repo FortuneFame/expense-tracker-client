@@ -3,9 +3,10 @@ import { URL_API } from '../../constants/constantsApp';
 import { useAccounts } from '../../hooks/useAccounts';
 import { AccountType, PropsAccountsList } from '../../types';
 
-import Income from '../CreateIncome';
+import CreateIncome from '../CreateIncome';
 import AccountHistory from '../AccountHistory';
-import CreateExpense from '../CreateExpense/CreateExpense';
+import CreateExpense from '../CreateExpense';
+import { Box, Button, Grid, TextField } from '@mui/material';
 
 const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }> => {
     const response = await fetch(`${URL_API}/account`, {
@@ -20,7 +21,6 @@ const fetchAccounts = async(authToken: string): Promise<{ data: AccountType[] }>
         throw new Error('Ошибка при получении данных');
     }
     return await response.json();
-    
 }
 
 const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
@@ -116,7 +116,8 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
 
     return (
         <div>
-            {accounts.length > 0 && <h2>Существующие бюджеты</h2>}
+           
+            {accounts.length > 0 && <h1 style={{ textAlign: 'center' }}>Существующие бюджеты</h1>}
             {Array.isArray(accounts) && accounts.map(account => {
                 const isEditing = editingStates[account.id] || false;
                 const createdAt = new Date(account.createdAt).toLocaleString();
@@ -124,54 +125,83 @@ const AccountsList: FC<PropsAccountsList> = ({ authToken }) => {
                 
                 return (
                   
-                    <div key={account.id} className="account-card">
+                    <Box key={account.id} sx={{ border: '1px solid #ccc', padding: '20px', marginBottom: '20px', textAlign: 'center' }}>
                         {isEditing ? (
-                            <>
-                                <input
+                            <Box display="flex" alignItems="center" flexDirection='column'>
+                                <TextField
+                                    sx={{ width: '50%' }}
                                     value={editedNames[account.id] || account.name}
-                                    onChange={(e) => setEditedNames(prev => ({ ...prev, [account.id]: e.target.value }))}
+                                    onChange={(e) => setEditedNames((prev) => ({ ...prev, [account.id]: e.target.value }))}
                                 />
-                                <button onClick={() => {
-                                    handleEditAccountName(account.id, editedNames[account.id] || account.name);
-                                    setEditingStates(prev => ({ ...prev, [account.id]: false }));
-                                }}>
-                                    Сохранить
-                                </button>
-                                <button onClick={() => {
-                                    setEditingStates(prev => ({ ...prev, [account.id]: false }));
-                                    setEditedNames(prev => ({ ...prev, [account.id]: account.name }));
-                                }}>
-                                    Отмена
-                                </button>
-
-                            </>
+                                <Box marginTop='20px' display='flex' width='100%' justifyContent='center'>
+                                    <Button
+                                        sx={{ marginRight: '15px' }}
+                                        variant="contained"
+                                        onClick={() => {
+                                            handleEditAccountName(account.id, editedNames[account.id] || account.name);
+                                            setEditingStates((prev) => ({ ...prev, [account.id]: false }));
+                                        }}
+                                    >
+                                        Сохранить
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => {
+                                            setEditingStates((prev) => ({ ...prev, [account.id]: false }));
+                                            setEditedNames((prev) => ({ ...prev, [account.id]: account.name }));
+                                        }}
+                                    >
+                                        Отмена
+                                    </Button>
+                                </Box>
+                            </Box>
                         ) : (
                             <>
                                 <h3>{account.name}</h3>
                                 <p>Баланс: {account.balance}</p>
                                 <p>Дата создания: {createdAt}</p>
-                                    <p>Последнее изменение: {updatedAt}</p>
-                                    
-                                    
-                                <button onClick={() => setEditingStates(prev => ({ ...prev, [account.id]: true }))}>Редактировать название</button>
-                                <button
+                                <p>Последнее изменение: {updatedAt}</p>
+                                <Button
+                                    sx={{ marginRight: '20px' }}
+                                    variant="contained"
+                                    onClick={() => setEditingStates((prev) => ({ ...prev, [account.id]: true }))}
+                                >
+                                    Редактировать название
+                                </Button>
+                                <Button
+                                    variant="contained"
                                     onClick={() => handleDeleteAccount(account.id)}
                                     disabled={deletingAccount === account.id}
                                 >
                                     Удалить счет
-                                </button>
-                                <AccountHistory refreshTrigger={refreshTrigger}
-  setRefreshTrigger={setRefreshTrigger} // Make sure this line is correct
-  setAccounts={setAccounts}  account={account} authToken={authToken} />
+                                </Button>
+                                {/* Add styles to AccountHistory component here */}
+                                <AccountHistory
+                                    refreshTrigger={refreshTrigger}
+                                    setRefreshTrigger={setRefreshTrigger}
+                                    setAccounts={setAccounts}
+                                    account={account}
+                                    authToken={authToken}
+                                />
                             </>
                         )}
-                    </div>
+                    </Box>
+
                 );
             })}
-            {authToken && accounts.length > 0 &&
-                <CreateExpense authToken={authToken} onExpenseAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />
-            }
-            {authToken && <Income authToken={authToken} onIncomeAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />}
+            {authToken && accounts.length > 0 && (
+                
+                <Box display="flex" justifyContent="center" textAlign='center' p={2}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                            <CreateExpense authToken={authToken} onExpenseAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <CreateIncome authToken={authToken} onIncomeAdded={() => setRefreshTrigger(!refreshTrigger)} accounts={accounts} />
+                        </Grid>
+                    </Grid>
+                </Box>
+            )}
         </div>
     );
 };

@@ -6,6 +6,7 @@ import './index.scss';
 import App from './App.tsx';
 import LoaderPage from './pages/LoaderPage';
 import PrivateRoute from './Context/Provider/PrivateProvider.tsx';
+import ErrorPage from './pages/Error';
 
 export const Start = lazy(() => import('./pages/Start'));
 export const Auth = lazy(() => import('./pages/Auth'));
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
               <Home />
           </PrivateRoute>
         )
+      },
+       {
+        path: "*",
+        element: <ErrorPage />,
       }
     ]
   }

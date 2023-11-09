@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import { TotalBalanceProps } from '../../types';
+import { Typography } from '@mui/material';
 
 
 const TotalBalance: FC<TotalBalanceProps> = ({ accounts }) => {
@@ -12,8 +13,9 @@ const TotalBalance: FC<TotalBalanceProps> = ({ accounts }) => {
 
     return (
         <div>
-            <h2>Общий баланс</h2>
-            <p>{totalBalance}</p>
+            <Typography textAlign='center' variant="h6">Общий баланс:</Typography>
+            <Typography textAlign='center' variant="h4">{totalBalance}</Typography>
+
         </div>
     );
 }

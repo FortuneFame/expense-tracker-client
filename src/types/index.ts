@@ -124,9 +124,9 @@ export interface Expense {
   export interface AccountHistoryProps {
   authToken: string | null;
     account: AccountType;
- refreshTrigger: boolean; // Ensure this is added
+ refreshTrigger: boolean; 
   setAccounts: Dispatch<SetStateAction<AccountType[]>>;
-  setRefreshTrigger: Dispatch<SetStateAction<boolean>>; // Ensure this is added
+  setRefreshTrigger: Dispatch<SetStateAction<boolean>>; 
   }
 export interface Account {
   id: number;
@@ -155,12 +155,14 @@ export interface DeleteExpenseProps {
   onExpenseDeleted: (incomeId: number) => void;
 }
 
+export type TransactionType = 'income' | 'expense'; 
 export interface Transaction {
   id: number;
   description: string;
   createdAt: string;
   account: Account;
   amount: number;
+  type: TransactionType;
 }
 
 export interface TransactionsResponse {

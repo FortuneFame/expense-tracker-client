@@ -7,6 +7,7 @@ import AccountCreate from '../../components/AccountCreate';
 import Header from '../../components/Header/Header';
 import AccountsList from '../../components/AccountsList';
 import { useAccounts } from '../../hooks/useAccounts';
+import { Typography } from '@mui/material';
 
 const HomeContent: FC = () => {
     const authToken = useAuth();
@@ -15,17 +16,19 @@ const HomeContent: FC = () => {
     return (
         <div>
             <Header />
-            <AccountCreate authToken={authToken} />
-            <AccountsList authToken={authToken} />
             {accounts.length > 0 ? (
                 <>
                 </>
             ) : (
                 <div>
-                    <h2>Откройте финансовую свободу с помощью умного бюджетирования!</h2>
-                    <p>Создайте бюджет, чтобы начать.</p>
+                    <Typography textAlign='center' variant="h4" gutterBottom marginBlock='40px'>
+                        Откройте финансовую свободу с помощью умного бюджетирования!
+                    </Typography>
+                    <Typography textAlign='center' variant="h6">Создайте бюджет, чтобы начать.</Typography>
                 </div>
             )}
+            <AccountCreate authToken={authToken} />
+            <AccountsList authToken={authToken} />
         </div>
     );
 };

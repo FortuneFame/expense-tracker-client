@@ -1,6 +1,7 @@
 import { FC, useState } from 'react';
 import { URL_API } from '../../constants/constantsApp';
 import { AccountType } from '../../types';
+import { Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 
 interface IncomeProps {
   authToken: string;
@@ -14,10 +15,9 @@ const CreateIncome: FC<IncomeProps> = ({ authToken, accounts, onIncomeAdded }) =
     const [accountId, setAccountId] = useState('');
     const [error, setError] = useState<string | null>(null);
 
-    const handleAccountChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setAccountId(e.target.value);
+    const handleAccountChange = (event: SelectChangeEvent<string>) => {
+        setAccountId(event.target.value);
     };
-
     const handleCreateIncome = async (event: React.FormEvent) => {
         event.preventDefault();
 
@@ -55,43 +55,50 @@ const CreateIncome: FC<IncomeProps> = ({ authToken, accounts, onIncomeAdded }) =
     };
 
     return (
+        
         <form onSubmit={handleCreateIncome}>
             <h2>Добавление дохода</h2>
             <div>
-                <label>Описание дохода</label>
-                <input
+                <TextField
+                    label="Описание дохода"
                     type="text"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     required
+                    fullWidth
                 />
             </div>
             <div>
-                <label>Сумма</label>
-                <input
+                <TextField
+                    label="Сумма"
                     type="number"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     required
+                    fullWidth
                 />
             </div>
             <div>
-                <label>Счет</label>
-                <select
-                    value={accountId}
-                    onChange={handleAccountChange}
-                    required
-                >
-                    <option value="" disabled>Выберите счет</option>
-                    {accounts.map((account: AccountType) => (
-                        <option key={account.id} value={account.id}>
-                            {account.name} (Баланс: {account.balance})
-                        </option>
-                    ))}
-                </select>
+                <FormControl fullWidth required>
+                    <InputLabel>Счет</InputLabel>
+                    <Select
+                        value={accountId}
+                        onChange={handleAccountChange}
+                        label="Счет"
+                    >
+                        <MenuItem value="" disabled>Выберите счет</MenuItem>
+                        {accounts.map((account: AccountType) => (
+                            <MenuItem key={account.id} value={account.id}>
+                                {account.name} (Баланс: {account.balance})
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
             </div>
-            <button type="submit">Добавить доход</button>
-            {error && <p className="error">{error}</p>}
+            <Button type="submit" variant="contained" color="primary">
+                Добавить доход
+            </Button>
+            {error && <FormHelperText error>{error}</FormHelperText>}
         </form>
     );
 };

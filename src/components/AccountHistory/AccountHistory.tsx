@@ -1,13 +1,17 @@
 import { useState, useEffect, FC } from 'react';
 import { URL_API } from '../../constants/constantsApp';
 import { AccountHistoryProps, AccountSummaryResponse, TransactionsResponse } from '../../types';
+import { TableContainer, Paper, Table, TableRow, TableCell, TableBody, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export type TransactionType = 'income' | 'expense';
 
-const AccountHistory: FC<AccountHistoryProps> = ({ authToken, account, refreshTrigger, setAccounts, setRefreshTrigger }) => {
+const AccountHistory: FC<AccountHistoryProps> = ({ authToken, account, refreshTrigger, setRefreshTrigger }) => {
   const [transactions, setTransactions] = useState<TransactionsResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentBalance, setCurrentBalance] = useState<number>(account.balance);
+  
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -53,23 +57,19 @@ const AccountHistory: FC<AccountHistoryProps> = ({ authToken, account, refreshTr
         throw new Error(`Ошибка при удалении ${type === 'income' ? 'дохода' : 'расхода'}`);
       }
 
-      // Если удаление прошло успешно, обновляем список транзакций
       setRefreshTrigger((prev: boolean) => !prev);
 
-      // Обновляем баланс счета в состоянии
       const transaction = transactions && (type === 'income'
         ? transactions.incomes.find(t => t.id === transactionId)
         : transactions.expenses.find(t => t.id === transactionId));
       
       const amount = transaction ? transaction.amount : 0;
 
-      const updatedAccount = {
-        ...account,
-        balance: type === 'income' ? account.balance + amount : account.balance + amount
-      };
-      setAccounts((prevAccounts) => prevAccounts.map(acc => acc.id === account.id ? updatedAccount : acc));
+      const updatedBalance = type === 'income' ? currentBalance - amount : currentBalance + amount;
+      setCurrentBalance(updatedBalance);
       
     } catch (error: unknown) {
+
       if (error instanceof Error) {
         setError(error.message);
       } else {
@@ -78,32 +78,60 @@ const AccountHistory: FC<AccountHistoryProps> = ({ authToken, account, refreshTr
     }
   }
 
-  if (loading) return <p>Загрузка истории транзакций...</p>;
   if (error) return <p>Ошибка: {error}</p>;
 
   return (
+   
     <div>
-      <h3>История транзакций для счета {account.name}</h3>
       {!loading && !error && transactions && (
         <>
-          <h4>Доходы</h4>
-          <ul>
-            {transactions.incomes.map((income) => (
-              <li key={income.id}>
-                {income.description} - {income.amount} (Дата: {new Date(income.createdAt).toLocaleDateString()})
-                <button onClick={() => deleteTransaction('income', income.id)}>Удалить</button>
-              </li>
-            ))}
-          </ul>
-          <h4>Расходы</h4>
-          <ul>
-            {transactions.expenses.map((expense) => (
-              <li key={expense.id}>
-                {expense.description} - {expense.amount} (Дата: {new Date(expense.createdAt).toLocaleDateString()})
-                <button onClick={() => deleteTransaction('expense', expense.id)}>Удалить</button>
-              </li>
-            ))}
-          </ul>
+          {transactions.incomes.length > 0 && (
+            <TableContainer component={Paper}>
+              <h3 style={{ textAlign: 'center' }}>Доходы</h3>
+              <Table>
+                <TableBody>
+                  {transactions.incomes.map((income) => (
+                    <TableRow key={income.id}>
+                      <TableCell component="th" scope="row">
+                        {income.description}
+                      </TableCell>
+                      <TableCell align="right">{income.amount}</TableCell>
+                      <TableCell align="right">{new Date(income.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell align="right">
+                        <IconButton onClick={() => deleteTransaction('income', income.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+          {transactions.expenses.length > 0 && (
+            <TableContainer component={Paper}>
+              <h3 style={{ textAlign: 'center' }}>Расходы</h3>
+              <Table>
+      
+                <TableBody>
+                  {transactions.expenses.map((expense) => (
+                    <TableRow key={expense.id}>
+                      <TableCell component="th" scope="row">
+                        {expense.description}
+                      </TableCell>
+                      <TableCell align="right">{expense.amount}</TableCell>
+                      <TableCell align="right">{new Date(expense.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell align="right">
+                        <IconButton onClick={() => deleteTransaction('expense', expense.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </>
       )}
     </div>
